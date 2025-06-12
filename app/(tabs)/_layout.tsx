@@ -1,35 +1,20 @@
-import React from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import { Ionicons } from '@expo/vector-icons';
+import { Tabs } from 'expo-router';
 
-export default function ExplorerScreen() {
+export default function TabsLayout() {
   return (
-    <View style={styles.container}>
-      <MapView
-        style={styles.map}
-        initialRegion={{
-          latitude: 20.5937,
-          longitude: 78.9629,
-          latitudeDelta: 10,
-          longitudeDelta: 10,
-        }}
-      >
-        <Marker
-          coordinate={{ latitude: 28.6139, longitude: 77.2090 }}
-          title="Delhi"
-          description="Capital of India"
-        />
-      </MapView>
-    </View>
+    <Tabs
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ color, size }) => {
+          let iconName = 'home';
+          if (route.name === 'map') iconName = 'map';
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        headerShown: true,
+      })}
+    >
+      <Tabs.Screen name="index" options={{ title: 'Home' }} />
+      <Tabs.Screen name="map" options={{ title: 'Map' }} />
+    </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  map: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
-  },
-});

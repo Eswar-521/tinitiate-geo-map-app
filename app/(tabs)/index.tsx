@@ -1,75 +1,102 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import * as Camera from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
+import * as SMS from 'expo-sms';
+import React, { useState } from 'react';
+import { Alert, Image, ImageBackground, Text, TouchableOpacity, View } from 'react-native';
 
 export default function HomeScreen() {
+  const router = useRouter();
+  const [image, setImage] = useState<string | null>(null);
+
+  const openGallery = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) return Alert.alert('Permission denied to access gallery');
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  const openCamera = async () => {
+    const permission = await Camera.requestCameraPermissionsAsync();
+    if (!permission.granted) return Alert.alert('Permission denied to access camera');
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  const sendSMS = async () => {
+    const available = await SMS.isAvailableAsync();
+    if (!available) return Alert.alert('SMS not supported');
+    await SMS.sendSMSAsync(['1234567890'], 'Hello from my app!');
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
+    <ImageBackground
+      source={require('../../assets/images/home-wallpaper.jpg')} 
+      style={{ flex: 1, resizeMode: 'cover', justifyContent: 'center', alignItems: 'center' }}
+    >
+      <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#fff', marginTop: 10 }}>
+        Welcome Home
+      </Text>
+
+      {image && (
         <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+          source={{ uri: image }}
+          style={{ width: 100, height: 100, marginTop: 10, borderRadius: 10 }}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      )}
+
+      {/* Bottom Dock Icons */}
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 40,
+          left: 0,
+          right: 0,
+          flexDirection: 'row',
+          justifyContent: 'space-around',
+          paddingHorizontal: 10,
+          flexWrap:'wrap'
+        }}
+      >
+
+        <TouchableOpacity onPress={sendSMS}>
+        <Ionicons name="call-outline" size={32} color="#4caf50" />
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={sendSMS}>
+          <Ionicons name="chatbubble-ellipses-outline" size={32} color="#4caf50" />
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={openCamera}>
+          <Ionicons name="camera-outline" size={32} color="#2196f3" />
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={openGallery}>
+          <MaterialIcons name="photo-library" size={32} color="#9c27b0" />
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push('/MapScreen')}>
+          <FontAwesome5 name="map-marked-alt" size={32} color="#f44336" />
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity onPress={() => Alert.alert('Settings')}>
+      <Ionicons name="settings-outline" size={28} color="#607d8b" />
+      </TouchableOpacity>
+
+    </ImageBackground>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
